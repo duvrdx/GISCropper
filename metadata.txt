@@ -1,0 +1,7 @@
+[general]
+name=GISCropper
+qgisMinimumVersion=3.10
+description=Clips rasters into multiple images using a point layer
+version=1.0
+author=Eduardo Próspero
+email=duvrdx@gmail.com
