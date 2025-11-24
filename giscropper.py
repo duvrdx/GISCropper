@@ -44,7 +44,9 @@ class GISCropperDialog(QDialog):
 
         layout_export = QFormLayout()
         self.wms_layer_combo = QgsMapLayerComboBox(self)
-        self.wms_layer_combo.setFilters(QgsMapLayerProxyModel.RasterLayer)
+        self.wms_layer_combo.setFilters(
+            QgsMapLayerProxyModel.RasterLayer | QgsMapLayerProxyModel.VectorLayer | QgsMapLayerProxyModel.PluginLayer
+        )
         self.width_px_spin = QSpinBox()
         self.width_px_spin.setRange(1, 9999); self.width_px_spin.setValue(127)
         self.height_px_spin = QSpinBox()
