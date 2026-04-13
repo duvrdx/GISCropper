@@ -184,13 +184,14 @@ class GISCropperDialog(QDialog):
             
             try:
                 if mode == 'clip':
+                    # Adicionado creationOptions=['TFW=YES']
                     gdal.Translate(
                         destName=output_path,
                         srcDS=extra_params.source(), 
                         projWin=[extent.xMinimum(), extent.yMaximum(), extent.xMaximum(), extent.yMinimum()],
                         outputSRS=output_src.toWkt(),
                         format='GTiff',
-                        creationOptions=['COMPRESS=LZW']
+                        creationOptions=['COMPRESS=LZW', 'TFW=YES']
                     )
 
                 elif mode == 'export':
@@ -205,7 +206,23 @@ class GISCropperDialog(QDialog):
                     job.waitForFinished()
                     
                     img = job.renderedImage()
-                    img.save(output_path, "tif")
+                    if img.save(output_path, "tif"):
+                        # --- Geração manual do arquivo .tfw ---
+                        pixel_size_x = extent.width() / extra_params['width_px']
+                        pixel_size_y = extent.height() / extra_params['height_px']
+                        
+                        # Coordenada do centro do pixel superior esquerdo
+                        x_ul = extent.xMinimum() + (pixel_size_x / 2.0)
+                        y_ul = extent.yMaximum() - (pixel_size_y / 2.0)
+                        
+                        tfw_path = os.path.splitext(output_path)[0] + ".tfw"
+                        with open(tfw_path, 'w') as tfw:
+                            tfw.write(f"{pixel_size_x}\n")    # A: escala x
+                            tfw.write("0.0\n")                # D: rotação
+                            tfw.write("0.0\n")                # B: rotação
+                            tfw.write(f"{-pixel_size_y}\n")   # E: escala y (negativa)
+                            tfw.write(f"{x_ul}\n")            # C: x do pixel superior esquerdo
+                            tfw.write(f"{y_ul}\n")            # F: y do pixel superior esquerdo
                 
                 success_count += 1
             except Exception as e:
